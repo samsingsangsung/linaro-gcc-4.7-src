@@ -9,8 +9,7 @@ jobs:
       - run: |
           apt-get update
           apt-get install -y build-essential flex bison texinfo wget \
-            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross \
-            libgmp-dev libmpfr-dev libmpc-dev
+            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross
       - run:
           name: Build GMP/MPFR/MPC from source (fallback)
           command: |
