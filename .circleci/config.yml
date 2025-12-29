@@ -38,7 +38,9 @@ jobs:
             --enable-languages=c,c++ --disable-multilib \
             --with-gmp=/usr/local/gmp \
             --with-mpfr=/usr/local/mpfr \
-            --with-mpc=/usr/local/mpc
+            --with-mpc=/usr/local/mpc \
+            CPPFLAGS="-I/usr/local/gmp/include -I/usr/local/mpfr/include -I/usr/local/mpc/include" \
+            LDFLAGS="-L/usr/local/gmp/lib -L/usr/local/mpfr/lib -L/usr/local/mpc/lib"
       - run: |
           cd build
           make -j$(nproc)
