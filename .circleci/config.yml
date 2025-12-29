@@ -12,22 +12,33 @@ jobs:
             gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross \
             libgmp-dev libmpfr-dev libmpc-dev
       - run:
-          name: Fallback build GMP/MPFR/MPC if system headers not found
+          name: Build GMP/MPFR/MPC from source (fallback)
           command: |
             mkdir infra && cd infra
             wget ftp://gcc.gnu.org/pub/gcc/infrastructure/gmp-4.3.2.tar.bz2
             wget ftp://gcc.gnu.org/pub/gcc/infrastructure/mpfr-2.4.2.tar.bz2
             wget ftp://gcc.gnu.org/pub/gcc/infrastructure/mpc-0.8.1.tar.gz
-            tar -xjf gmp-4.3.2.tar.bz2 && cd gmp-4.3.2 && ./configure --prefix=/usr/local && make -j$(nproc) && make install && cd ..
-            tar -xjf mpfr-2.4.2.tar.bz2 && cd mpfr-2.4.2 && ./configure --prefix=/usr/local --with-gmp=/usr/local && make -j$(nproc) && make install && cd ..
-            tar -xzf mpc-0.8.1.tar.gz && cd mpc-0.8.1 && ./configure --prefix=/usr/local --with-gmp=/usr/local --with-mpfr=/usr/local && make -j$(nproc) && make install && cd ..
+
+            tar -xjf gmp-4.3.2.tar.bz2 && cd gmp-4.3.2
+            ./configure --prefix=/usr/local/gmp && make -j$(nproc) && make install
+            cd ..
+
+            tar -xjf mpfr-2.4.2.tar.bz2 && cd mpfr-2.4.2
+            ./configure --prefix=/usr/local/mpfr --with-gmp=/usr/local/gmp && make -j$(nproc) && make install
+            cd ..
+
+            tar -xzf mpc-0.8.1.tar.gz && cd mpc-0.8.1
+            ./configure --prefix=/usr/local/mpc --with-gmp=/usr/local/gmp --with-mpfr=/usr/local/mpfr && make -j$(nproc) && make install
+            cd ..
       - run: |
           mkdir build && cd build
           ../configure --build=x86_64-linux-gnu --host=aarch64-linux-gnu \
             --target=arm-eabi \
             --prefix=/workspace/linaro-gcc-47-arm-eabi \
             --enable-languages=c,c++ --disable-multilib \
-            --with-gmp=/usr/local --with-mpfr=/usr/local --with-mpc=/usr/local
+            --with-gmp=/usr/local/gmp \
+            --with-mpfr=/usr/local/mpfr \
+            --with-mpc=/usr/local/mpc
       - run: |
           cd build
           make -j$(nproc)
