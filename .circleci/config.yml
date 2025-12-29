@@ -30,6 +30,7 @@ jobs:
             ./configure --prefix=/usr/local/mpc --with-gmp=/usr/local/gmp --with-mpfr=/usr/local/mpfr && make -j$(nproc) && make install
             cd ..
       - run: |
+          export LD_LIBRARY_PATH=/usr/local/gmp/lib:/usr/local/mpfr/lib:/usr/local/mpc/lib:$LD_LIBRARY_PATH
           mkdir build && cd build
           ../configure --build=x86_64-linux-gnu --host=aarch64-linux-gnu \
             --target=arm-eabi \
