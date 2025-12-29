@@ -1,25 +1,41 @@
 version: 2.1
 
 jobs:
-  build-linaro-gcc-4_7:
+  build-linaro-gcc-47:
     docker:
       - image: ubuntu:18.04
     steps:
       - checkout
       - run: |
           apt-get update
-          apt-get install -y build-essential flex bison libgmp-dev libmpfr-dev libmpc-dev texinfo wget gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross
+          apt-get install -y build-essential flex bison texinfo wget \
+            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross \
+            libgmp-dev libmpfr-dev libmpc-dev
+      - run:
+          name: Fallback: build GMP/MPFR/MPC if system headers not found
+          command: |
+            mkdir infra && cd infra
+            wget ftp://gcc.gnu.org/pub/gcc/infrastructure/gmp-4.3.2.tar.bz2
+            wget ftp://gcc.gnu.org/pub/gcc/infrastructure/mpfr-2.4.2.tar.bz2
+            wget ftp://gcc.gnu.org/pub/gcc/infrastructure/mpc-0.8.1.tar.gz
+            tar -xjf gmp-4.3.2.tar.bz2 && cd gmp-4.3.2 && ./configure --prefix=/usr/local && make -j$(nproc) && make install && cd ..
+            tar -xjf mpfr-2.4.2.tar.bz2 && cd mpfr-2.4.2 && ./configure --prefix=/usr/local --with-gmp=/usr/local && make -j$(nproc) && make install && cd ..
+            tar -xzf mpc-0.8.1.tar.gz && cd mpc-0.8.1 && ./configure --prefix=/usr/local --with-gmp=/usr/local --with-mpfr=/usr/local && make -j$(nproc) && make install && cd ..
       - run: |
           mkdir build && cd build
-          ../configure --build=x86_64-linux-gnu --host=aarch64-linux-gnu --target=arm-eabi --prefix=/workspace/linaro-gcc-4.7-arm-eabi --enable-languages=c,c++ --disable-multilib
+          ../configure --build=x86_64-linux-gnu --host=aarch64-linux-gnu \
+            --target=arm-eabi \
+            --prefix=/workspace/linaro-gcc-47-arm-eabi \
+            --enable-languages=c,c++ --disable-multilib \
+            --with-gmp=/usr/local --with-mpfr=/usr/local --with-mpc=/usr/local
       - run: |
           cd build
           make -j$(nproc)
           make install
       - store_artifacts:
-          path: /workspace/linaro-gcc-4.7-arm-eabi
+          path: /workspace/linaro-gcc-47-arm-eabi
 
 workflows:
   build:
     jobs:
-      - build-linaro-gcc-4_7
+      - build-linaro-gcc-47
