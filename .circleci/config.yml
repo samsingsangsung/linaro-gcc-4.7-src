@@ -22,4 +22,4 @@ jobs:
 workflows:
   build:
     jobs:
-      - build-linaro-gcc-4.7
+      - build-linaro-gcc-4_7
